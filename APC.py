@@ -12,8 +12,8 @@ TAKEN_OFF = -1
 FINAL_STRETCH = -2
 BACK_HOME = -3
 # some rewards for different situation
-PASS_REWARD = -1
-FINAL_STRETCH_OVERKILL_REWARD = 0
+PASS_REWARD = 0
+FINAL_STRETCH_OVERKILL_REWARD = -1
 BACK_HOME_REWARD = 10
 BlOCKED_REWARD = -1
 GET_ON_FINAL_STRETCH_REWARD = 5
@@ -39,18 +39,6 @@ LOSING_PANELTY = -100
   # 1 if player won the game, 0 otherwise
   # 1 if no moves possible, 0 otherwise
 # ]
-FEATURES = 11
-TAKE_OFF_IDX = 0
-BACK_HOME_IDX = 1
-BLOCKED_IDX = 2
-GET_ON_FINAL_STRETCH_IDX = 3
-BIG_FLY_IDX = 4
-SMALL_FLY_IDX = 5
-ATTACK_IDX = 6
-SACRIFICE_IDX = 7
-NORMAL_IDX = 8
-WINNING_IDX = 9
-NO_MOVE_IDX = 10
 # position mapping
 POS_TO_BOARDPOS = {
   "0": [(51, 30), (50, 30), (52, 30)],
@@ -220,27 +208,14 @@ class APCEnv(gym.Env):
     Play the game for one round for one player.
     action: (player, plane) pair, where steps being 0 means that player choose to take off plane
     :return: copy of the state, reward for all players this round, boolean for termination, debug info
-    debug info contains whether there will be another bonus round and a feature vector of the result of the action applied
-    feature vector: [
-      1 if get one plane out of home, 0 otherwise
-      1 if get one plane to home, 0 otherwise
-      1 if plane is blocked or overkills final stretch, 0 otherwise
-      1 if plane gets on final stretch, 0 otherwise
-      1 if plane big fly, 0 otherwise
-      1 if plane small fly, 0 otherwise
-      1 if plane kills opponents, 0 otherwise
-      1 if plane sacrificed, 0 otherwise
-      1 if plane moves normally, 0 otherwise
-      1 if player won the game, 0 otherwise
-    ]
+    debug info contains whether there will be another bonus round
     """
-    feature_vector = [0] * FEATURES
     active_player_idx, plane = action
     steps = self.state.dice_roll_res
     bonus = steps == 6
     active_player = self.state.players[active_player_idx]
     self.state.turn += 1
-    reward = [0] * 4
+    reward = [self.count_flying_planes(player) for player in range(self.state.player_num)]
     # print information about the game
     # print(f"----------- Turn {self.state.turn} -----------")
     # print(f"Active Player: {PLAYER_TO_COLOR[active_player_idx]}")
@@ -249,17 +224,13 @@ class APCEnv(gym.Env):
       # print(f"No plane to move. PASS.")
       self.state.dice_roll_res = self._roll_dice()
       # print(f"Next Dice Roll: {self.state.dice_roll_res}")
-      reward[active_player_idx] = PASS_REWARD
-      feature_vector[NO_MOVE_IDX] = 1
-      return self.state.copy(), reward, False, {"bonus": False, "feature": feature_vector}
+      reward[active_player_idx] += PASS_REWARD
+      return self.state.copy(), reward, False, {"bonus": False}
     # print(f"Action: Plane {plane}")
     # check if selected plane has taken off
     if active_player.plane_positions[plane] == HOME:
-      if not steps == 6:
-        a = 2
       assert steps == 6
       active_player.plane_positions[plane] = TAKEN_OFF
-      feature_vector[TAKE_OFF_IDX] = 1
     else:
       # plane has taken off
 
@@ -268,17 +239,17 @@ class APCEnv(gym.Env):
       if active_player.plane_positions[plane] == FINAL_STRETCH:
         assert not active_player.final_stretch[plane] == -1
         cal_final_stretch = active_player.final_stretch[plane] + steps
+        old_final_stretch = active_player.final_stretch[plane]
         if cal_final_stretch > 5:
-          reward[active_player_idx] = FINAL_STRETCH_OVERKILL_REWARD
+          reward[active_player_idx] += FINAL_STRETCH_OVERKILL_REWARD
           active_player.final_stretch[plane] = 5 - (cal_final_stretch - 5)
-          feature_vector[BLOCKED_IDX]
         else:
           active_player.final_stretch[plane] = cal_final_stretch
+        reward[active_player_idx] += old_final_stretch - active_player.final_stretch[plane]
         if active_player.final_stretch[plane] == 5:
-          reward[active_player_idx] = BACK_HOME_REWARD
+          reward[active_player_idx] += BACK_HOME_REWARD
           active_player.plane_home[plane] = True
           active_player.plane_positions[plane] = BACK_HOME
-          feature_vector[BACK_HOME_IDX] = 1
       else:
         # plane has taken off
         # if plane is not yet on track, put it on track
@@ -298,38 +269,34 @@ class APCEnv(gym.Env):
             break
         # check if blocked
         if block_pos > 0:
-          reward[active_player_idx] = BlOCKED_REWARD
+          reward[active_player_idx] += BlOCKED_REWARD
           active_player.plane_positions[plane] = (block_pos - (cal_new_pos - block_pos)) % TRACK_LEN
-          feature_vector[BLOCKED_IDX] = 1
         # check if we get on final stretch
         elif active_player.get_on_final_stretch(active_player_idx, plane, steps):
-          reward[active_player_idx] = GET_ON_FINAL_STRETCH_REWARD
+          reward[active_player_idx] += GET_ON_FINAL_STRETCH_REWARD
           active_player.plane_positions[plane] = FINAL_STRETCH
           active_player.final_stretch[plane] = cal_new_pos - self.final_stretch_pos[active_player_idx]
-          feature_vector[GET_ON_FINAL_STRETCH_IDX] = 1
           if active_player.final_stretch[plane] == 5:
-            reward[active_player_idx] = BACK_HOME_REWARD
+            reward[active_player_idx] += BACK_HOME_REWARD
             active_player.plane_home[plane] = True
             active_player.plane_positions[plane] = BACK_HOME
-            feature_vector[BACK_HOME_IDX] = 1
         # check for big fly
         elif (cal_new_pos - active_player_idx * 13) % 52 == 17 or (cal_new_pos - active_player_idx * 13) % 52 == 13:
-          reward[active_player_idx] = BIG_FLY_REWARD
+          reward[active_player_idx] += BIG_FLY_REWARD
           active_player.plane_positions[plane] = cal_new_pos + 16
-          feature_vector[BIG_FLY_IDX] = 1
         # check for small fly
         elif (cal_new_pos - active_player_idx * 13 - 1) % 4 == 0:
-          reward[active_player_idx] = SMALL_FLY_REWARD
+          reward[active_player_idx] += SMALL_FLY_REWARD
           active_player.plane_positions[plane] = cal_new_pos + 4
-          feature_vector[SMALL_FLY_IDX] = 1
         # just a normal move
         else:
-          reward[active_player_idx] = NORMAL_REWARD
+          reward[active_player_idx] += NORMAL_REWARD
           active_player.plane_positions[plane] = cal_new_pos
-          feature_vector[NORMAL_IDX] = 1
+        reward[active_player_idx] += active_player.plane_positions[plane] - old_pos
 
     if active_player.plane_positions[plane] >= 0:
       active_player.plane_positions[plane] = active_player.plane_positions[plane] % 52
+
 
     # Step 2: Check for collision
     planes_on, opponent = self.planes_on_pos(active_player.plane_positions[plane], active_player_idx)
@@ -337,11 +304,9 @@ class APCEnv(gym.Env):
       reward[active_player_idx] += ATTACK_BONUS_REWARD
       reward[opponent] -= ATTACKED_PENALTY
       self.state.players[opponent].plane_positions[opponent_plane] = HOME
-      feature_vector[ATTACK_IDX] = 1
     if len(planes_on) > 1:
       reward[active_player_idx] += SACRIFICE_PENALTY
       active_player.plane_positions[plane] = HOME
-      feature_vector[SACRIFICE_IDX] = 1
 
     # Step 3: Check for plane arriving home
     for p in range(active_player.plane_num):
@@ -352,17 +317,16 @@ class APCEnv(gym.Env):
     if all(active_player.plane_home):
       self.state.isTerminal = True
       self.state.winner = active_player_idx
-      reward[active_player_idx] = WINNING_REWARD
+      reward[active_player_idx] += WINNING_REWARD
       for i in range(self.state.player_num):
         if not i == active_player_idx:
-          reward[i] = LOSING_PANELTY
-      feature_vector[WINNING_IDX] = 1
-      return self.state.copy(), reward, True, {"bonus": False, "feature": feature_vector}
+          reward[i] += LOSING_PANELTY
+      return self.state.copy(), reward, True, {"bonus": False}
 
     # Step 5: Roll dice for next round
     self.state.dice_roll_res = self._roll_dice()
     # print(f"Next Dice Roll: {self.state.dice_roll_res}")
-    return self.state.copy(), reward, False, {"bonus": bonus, "feature": feature_vector}
+    return self.state.copy(), reward, False, {"bonus": bonus}
       
   def reset(self):
     self.state = APCState()
@@ -443,6 +407,14 @@ class APCEnv(gym.Env):
     #   return 6
     # return 1
     return random.randint(1, 6)
+
+  def count_flying_planes(self, player):
+    player_state = self.state.players[player]
+    flying_plane = 0
+    for pos in player_state.plane_positions:
+      if not pos == HOME and not pos == BACK_HOME:
+        flying_plane += 1
+    return flying_plane
 
   def planes_on_pos(self, pos, active_player):
     """

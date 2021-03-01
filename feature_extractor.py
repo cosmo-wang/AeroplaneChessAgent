@@ -1,4 +1,5 @@
 from APC import APCEnv, HOME, TAKEN_OFF, FINAL_STRETCH, BACK_HOME
+import numpy as np
 
 TRACK_END_POS = [49, 10, 23, 36]
 
@@ -25,14 +26,13 @@ def extractor(env, action):
   player_state = state.players[player_idx]
   
   # feature 1: number of flying planes
-  flying_plane = count_flying_planes(player_state)
+  flying_plane = env_copy.count_flying_planes(player_idx)
 
   # feature 2: number of opponent planes flying
   oppo_flying_plane = 0
   for oppo in range(state.player_num):
     if not oppo == player_idx:
-      oppo_state = state.players[oppo]
-      oppo_flying_plane += count_flying_planes(oppo_state)
+      oppo_flying_plane += env_copy.count_flying_planes(oppo)
 
   # feature 3: sum of distance to win
   dist_to_win = count_dist_to_win(player_state, TRACK_END_POS[player_idx])
@@ -74,7 +74,7 @@ def extractor(env, action):
     if pos == BACK_HOME:
       planes_back_home += 1
 
-  return [
+  return np.array([
     flying_plane,
     oppo_flying_plane,
     dist_to_win,
@@ -83,15 +83,7 @@ def extractor(env, action):
     oppo_behind,
     oppo_ahead,
     planes_back_home
-  ]
-
-
-def count_flying_planes(player_state):
-  flying_plane = 0
-  for pos in player_state.plane_positions:
-    if not pos == HOME and not pos == BACK_HOME:
-      flying_plane += 1
-  return flying_plane
+  ])
 
 def count_dist_to_win(player_state, track_end_pos):
   dist_to_win = 0

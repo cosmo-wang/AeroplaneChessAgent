@@ -1,0 +1,56 @@
+                 -----                                                             -----
+                | -1Y |       - - b b b - y y y - g g g - r r r - b b b - -       | -1G |
+                |     |     r   |       |       |       |       |       |   y     |     |
+--------------- |     |   r   20|  21   |  22   |  23   |  24   |  25   | 26  y   |     | ---------------
+|      |      | |     | r       |       |       |       |       |       |       y |     | |      |      |
+|  YY0 |  YY1 |  -----  - - - - - b b b - y y y - g g g - r r r - b b b - - - - -  -----  |  GG0 |  GG1 |
+|      |      |         g       g               g       g               g       g         |      |      |
+---------------         g  19   g               g  fG0  g               g  27   g         ---------------
+|      |      |         g       g               g       g               g       g         |      |      |
+|  YY2 |  YY3 |         - - - - -               - - - - -               - - - - -         |  GG2 |  GG3 |
+|      |      |         y       y               g       g               r       r         |      |      |
+---------------         y  18   y               g  fG1  g               r  28   r         ---------------
+                        y       y               g       g               r       r
+      - - y y y - g g g - - - - - -             - - - - -             - - - - - - g g g - r r r - -
+    b   |       |       | \       b             g       g             b       / |       |       |   b
+  b   13|  14   |  15   |   \   17b - - > - - > g  fG2  g - - > - - > b 29  /   |  31   |  32   | 33  b
+b       |       |       | 16  \   b             g       g             b   /   30|       |       |       b
+- - - - - y y y - g g g |       \ b             - - - - -             b /       | g g g - r r r - - - - -
+r       r               - r r r r -             g       g             - y y y y -               y       y
+r  12   r                   ^                   g  fG3  g                   |                   y  34   y
+r       r                   |                   g       g                   |                   y       y
+- - - - -                   |                   - - - - -                   v                   - - - - -
+g       g                   ^                   g       g                   |                   g       g
+g  11   g                   |                   g  fG4  g                   |                   g  35   g
+g       g                   |                   g       g                   v                   g       g
+- - - - - y y y - y y y - y y y - y y y - y y y * * * * * r r r - r r r - r r r - r r r - r r r - - - - -
+y       y       |       |       |       |       *       *       |       |       |       |       r       r
+y  10   y  fY0  |  fY1  |  fY2  |  fY3  |  fY4  *  WIN  *  fR4  |  fR3  |  fR2  |  fR1  |  fR0  r  36   r
+y       y       |       |       |       |       *       *       |       |       |       |       r       r
+- - - - - y y y - y y y - y y y - y y y - y y y * * * * * r r r - r r r - r r r - r r r - r r r - - - - -
+b       b                   ^                   b       b                   |                   b       b
+b   9   b                   |                   b  fB4  b                   |                   b  37   b
+b       b                   |                   b       b                   v                   b       b
+- - - - -                   ^                   - - - - -                   |                   - - - - -
+r       r                   |                   b       b                   |                   y       y
+r   8   r                   |                   b  fB3  b                   v                   y  38   y
+r       r               - r r r r -             b       b             - y y y y -               y       y
+- - - - - y y y - b b b |       / g             - - - - -             g \       | b b b - r r r - - - - -
+g       |       |       | 4   /   g             b       b             g   \   42|       |       |       g
+  g   7 |   6   |   5   |   /   3 g < - - < - - b  fB2  b < - - < - - g 43  \   |  41   |  40   | 39  g
+    g   |       |       | /       g             b       b             g       \ |       |       |   g
+      - - y y y - b b b - - - - - -             - - - - -             - - - - - - b b b - r r r - -
+                        y       y               b       b               r       r
+---------------         y   2   y               b  fB1  b               r  44   r         ---------------
+|      |      |         y       y               b       b               r       r         |      |      |
+|  BB0 |  BB1 |         - - - - -               - - - - -               - - - - -         |  RR0 |  RR1 |
+|      |      |         b       b               b       b               b       b         |      |      |
+---------------         b   1   b               b  fB0  b               b  45   b         ---------------
+|      |      |         b       b               b       b               b       b         |      |      |
+|  BB2 |  BB3 |  -----  - - - - - g g g - y y y - b b b - r r r - g g g - - - - -  -----  |  RR2 |  RR3 |
+|      |      | | -1B | r       |       |       |       |       |       |       y | -1R | |      |      |
+--------------- |     |   r   0 |  51   |  50   |  49   |  48   |  47   | 46  y   |     | ---------------
+                |     |     r   |       |       |       |       |       |   y     |     |
+                |     |       - - g g g - y y y - b b b - r r r - g g g - -       |     |
+                 -----                                                             -----
+

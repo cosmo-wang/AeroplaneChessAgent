@@ -77,8 +77,8 @@ def extractor(env, action):
   return np.array([
     flying_plane,
     oppo_flying_plane,
-    dist_to_win / 100,
-    oppo_dist_to_win / 100,
+    dist_to_win,
+    oppo_dist_to_win,
     planes_on_final_stretch,
     oppo_behind,
     oppo_ahead,

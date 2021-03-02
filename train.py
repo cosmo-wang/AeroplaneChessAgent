@@ -9,8 +9,8 @@ class Trainer():
   def __init__(self, episodes=10000, alpha=0.5, discount=0.9, epsilon=0.9, active_player=0, dst_file="weights.txt", debug=False):
     self.game = APCEnv()
     self.game.reset()
-    # self.weights = np.array([0.789563, -0.5871338, -0.8963852, 0.36713951, 1.36357122, -1.56593172, 0.36471258, 1.41267423])
-    self.weights = np.random.rand(FEATURES)
+    self.weights = np.array([0.78956334, -0.58713383, -0.89638521, 0.36713951, 1.36357122, -1.56593172, 0.36471258, 1.41267423])
+    # self.weights = np.random.rand(FEATURES)
     self.episodes = episodes
     self.alpha = alpha
     self.discount = discount
@@ -103,5 +103,5 @@ class Trainer():
 
 if __name__ == "__main__":
     trainer = Trainer()
-    trainer.train()
-    # trainer.test()
+    # trainer.train()
+    trainer.test()

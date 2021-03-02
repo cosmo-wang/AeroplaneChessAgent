@@ -215,6 +215,7 @@ class APCEnv(gym.Env):
     bonus = steps == 6
     active_player = self.state.players[active_player_idx]
     self.state.turn += 1
+    old_dist_traveled = self._get_reward()
     reward = [self.count_flying_planes(player) for player in range(self.state.player_num)]
     # print information about the game
     # print(f"----------- Turn {self.state.turn} -----------")
@@ -225,7 +226,7 @@ class APCEnv(gym.Env):
       self.state.dice_roll_res = self._roll_dice()
       # print(f"Next Dice Roll: {self.state.dice_roll_res}")
       reward[active_player_idx] += PASS_REWARD
-      return self.state.copy(), reward, False, {"bonus": False}
+      return self.state.copy(), [self._get_reward()[i] - old_dist_traveled[i] for i in range(4)], False, {"bonus": False}
     # print(f"Action: Plane {plane}")
     # check if selected plane has taken off
     if active_player.plane_positions[plane] == HOME:
@@ -321,12 +322,12 @@ class APCEnv(gym.Env):
       for i in range(self.state.player_num):
         if not i == active_player_idx:
           reward[i] += LOSING_PANELTY
-      return self.state.copy(), reward, True, {"bonus": False}
+      return self.state.copy(), [self._get_reward()[i] - old_dist_traveled[i] for i in range(4)], True, {"bonus": False}
 
     # Step 5: Roll dice for next round
     self.state.dice_roll_res = self._roll_dice()
     # print(f"Next Dice Roll: {self.state.dice_roll_res}")
-    return self.state.copy(), reward, False, {"bonus": bonus}
+    return self.state.copy(), [self._get_reward()[i] - old_dist_traveled[i] for i in range(4)], False, {"bonus": bonus}
       
   def reset(self):
     self.state = APCState()
@@ -407,6 +408,25 @@ class APCEnv(gym.Env):
     #   return 6
     # return 1
     return random.randint(1, 6)
+
+  def _get_reward(self):
+    reward = [0] * 4
+    for player in range(self.state.player_num):
+      player_state = self.state.players[player]
+      for plane in range(player_state.plane_num):
+        plane_pos = player_state.plane_positions[plane]
+        if plane_pos == HOME:
+          reward[player] += -10
+        elif plane_pos == TAKEN_OFF:
+          reward[player] += 0
+        elif plane_pos == FINAL_STRETCH:
+          reward[player] += 60 + player_state.final_stretch[plane]
+        elif plane_pos == BACK_HOME:
+          reward[player] += 70
+        else:
+          reward[player] += (player_state.plane_positions[plane] - player * 13) % 52
+    return reward
+
 
   def count_flying_planes(self, player):
     player_state = self.state.players[player]

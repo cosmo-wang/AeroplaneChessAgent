@@ -8,14 +8,14 @@ def extractor(env, action):
   Extract a feature vector from a state and action pair by applying
   the action and observe the update state for a given player.
   [
-    number of flying planes,
-    number of opponent planes flying,
-    sum of distance to win,
-    sum of opponents distance to win,
-    number of planes on final stretch,
-    number of opponent planes behind within 6 steps,
-    number of opponent planes ahead within 6 steps,
-    number of planes back home
+    number of flying planes, 1
+    number of opponent planes flying, -1
+    sum of distance to win, -1
+    sum of opponents distance to win, 1
+    number of planes on final stretch, 1
+    number of opponent planes behind within 6 steps, -1
+    number of opponent planes ahead within 6 steps, 1
+    number of planes back home 1
   ]
   """
   player_idx, plane = action
@@ -77,8 +77,8 @@ def extractor(env, action):
   return np.array([
     flying_plane,
     oppo_flying_plane,
-    dist_to_win,
-    oppo_dist_to_win,
+    dist_to_win / 100,
+    oppo_dist_to_win / 100,
     planes_on_final_stretch,
     oppo_behind,
     oppo_ahead,
